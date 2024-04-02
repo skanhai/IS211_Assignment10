@@ -1,3 +1,43 @@
+import sqlite3
 
-if __name__ == "__main__":
-    pass
+
+conn = sqlite3.connect('pets.db')
+
+def fetch_person_and_pets(person_id):
+
+    cursor = conn.cursor()
+
+
+    cursor.execute("SELECT * FROM person WHERE id=?", (person_id,))
+    person_data = cursor.fetchone()
+
+    if person_data:
+        print(f"{person_data[1]} {person_data[2]}, {person_data[3]} years old")
+
+
+        cursor.execute("SELECT pet.name, pet.breed, pet.age FROM pet JOIN person_pet ON pet.id = person_pet.pet_id WHERE person_pet.person_id=?", (person_id,))
+        pets_data = cursor.fetchall()
+
+        if pets_data:
+            for pet in pets_data:
+                print(f"{person_data[1]} {person_data[2]} owned {pet[0]}, a {pet[1]}, that was {pet[2]} years old")
+        else:
+            print(f"{person_data[1]} {person_data[2]} did not own any pets.")
+    else:
+        print("Person with ID", person_id, "does not exist.")
+
+    cursor.close()
+
+
+while True:
+    try:
+        person_id = int(input("Enter person's ID number (or -1 to exit): "))
+        if person_id == -1:
+            break
+        fetch_person_and_pets(person_id)
+    except ValueError:
+        print("Please enter a valid integer ID.")
+        continue
+
+
+conn.close()
